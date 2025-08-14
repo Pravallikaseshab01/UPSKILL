@@ -175,7 +175,6 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // Reusable Card component
         const Card = ({ image, title, description, hasPlayButton = false }) => {
             return (
                 <div className="gradient-border">
@@ -205,9 +204,7 @@
             );
         };
 
-        // Main CardGrid component
         const CardGrid = () => {
-            // Array of card data
             const cardData = [
                 {
                     id: 1,
@@ -315,10 +312,9 @@
                 </div>
             );
         };
-
-        // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<CardGrid />);
     </script>
 </body>
+
 </html>
