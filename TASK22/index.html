@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos Gallery</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(20,20,20,0.9));
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+        
+        .error-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            flex-direction: column;
+        }
+        
+        .error-text {
+            color: #ff6b6b;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .photo-card {
+            background: linear-gradient(145deg, rgba(40, 40, 40, 0.8), rgba(60, 60, 60, 0.9));
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .photo-placeholder {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .photo-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255,255,255,0.3), 
+                transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .photo-title {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .photo-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-align: center;
+            line-height: 1.4;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-clamp: 2;
+        }
+        
+        .color-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .colors-section {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .colors-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 1200px) {
+            .photo-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .photo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .title {
+                font-size: 36px;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+        const useFetch = (url) => {
+            const [data, setData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            const fetchData = useCallback(async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    setData(result);
+                } catch (err) {
+                    if (err.message.includes('Failed to fetch') || !navigator.onLine) {
+                        setError('Error: Failed to Fetch');
+                    } else {
+                        setError(`Error: ${err.message}`);
+                    }
+                    setData(null);
+                } finally {
+                    setLoading(false);
+                }
+            }, [url]);
+
+            useEffect(() => {
+                if (url) {
+                    fetchData();
+                }
+            }, [fetchData]);
+
+            return { data, loading, error, refetch: fetchData };
+        };
+
+        const generateColors = () => {
+            const colors = [];
+            const colorNames = [
+                'Red', 'Blue', 'Green', 'Purple', 'Orange', 'Pink', 'Yellow', 'Cyan', 
+                'Magenta', 'Lime', 'Indigo', 'Violet', 'Crimson', 'Emerald', 'Amber',
+                'Turquoise', 'Coral', 'Lavender', 'Maroon', 'Navy', 'Olive', 'Teal',
+                'Silver', 'Gold', 'Copper', 'Bronze', 'Platinum', 'Rose', 'Mint', 'Peach',
+                'Sage', 'Berry', 'Forest', 'Ocean', 'Sky', 'Sunset', 'Dawn', 'Dusk',
+                'Pearl', 'Ruby', 'Sapphire', 'Diamond', 'Jade', 'Opal', 'Onyx', 'Quartz'
+            ];
+            
+            const shades = [
+                'Light', 'Dark', 'Deep', 'Bright', 'Pale', 'Vivid', 'Soft', 'Rich',
+                'Muted', 'Bold', 'Subtle', 'Intense', 'Pastel', 'Neon', 'Metallic',
+                'Electric', 'Royal', 'Imperial', 'Cosmic', 'Mystic'
+            ];
+
+            for (let i = 0; i < 200; i++) {
+                const hue = (i * 137.508) % 360; 
+                const saturation = 40 + (i % 5) * 15; 
+                const lightness = 30 + (i % 7) * 10; 
+                
+                const color = `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
+                const baseName = colorNames[i % colorNames.length];
+                const shade = shades[Math.floor(i / colorNames.length) % shades.length];
+                const name = i < colorNames.length ? baseName : `${shade} ${baseName}`;
+                
+                colors.push({
+                    id: i + 1,
+                    name: name,
+                    color: color,
+                    description: `Beautiful ${name.toLowerCase()} color with unique hue`
+                });
+            }
+            
+            return colors;
+        };
+
+        const colorCardsData = generateColors();
+
+        const generateColorVariations = (baseColor) => {
+            return [baseColor, baseColor, baseColor];
+        };
+
+        const ColorCard = ({ colorData, index }) => {
+            const colors = generateColorVariations(colorData.color);
+            
+            return (
+                <div className="photo-card">
+                    <div 
+                        className="photo-placeholder"
+                        style={{ 
+                            backgroundColor: colorData.color,
+                            background: colorData.color
+                        }}
+                    >
+                    </div>
+                    <div className="photo-title">
+                        {colorData.name}
+                    </div>
+                    <div className="photo-description">
+                        {colorData.description}
+                    </div>
+                    <div className="colors-section">
+                        <div className="colors-label">Color Variations</div>
+                        <div>
+                            {colors.map((color, idx) => (
+                                <span
+                                    key={idx}
+                                    className="color-indicator"
+                                    style={{ backgroundColor: color }}
+                                    title={`${colorData.name} variant ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PhotoGallery = () => {
+            const [showError, setShowError] = useState(false);
+            const [isCheckingNetwork, setIsCheckingNetwork] = useState(true);
+
+            useEffect(() => {
+                const checkNetwork = async () => {
+                    try {
+                        if (!navigator.onLine) {
+                            setShowError(true);
+                            setIsCheckingNetwork(false);
+                            return;
+                        }
+                        const response = await fetch('https://www.google.com/favicon.ico', { 
+                            method: 'HEAD',
+                            cache: 'no-cache',
+                            mode: 'no-cors'
+                        });
+                        
+                        setShowError(false);
+                    } catch (error) {
+                        setShowError(true);
+                    } finally {
+                        setIsCheckingNetwork(false);
+                    }
+                };
+
+                checkNetwork();
+                const handleOnline = () => {
+                    setShowError(false);
+                };
+                const handleOffline = () => {
+                    setShowError(true);
+                };
+
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
+            }, []);
+
+            if (isCheckingNetwork) {
+                return (
+                    <div>
+                        <div className="header">
+                            <h1 className="title">Photos</h1>
+                        </div>
+                        <div className="container">
+                            <div className="loading-container">
+                                <div className="spinner"></div>
+                                <div className="loading-text">Loading photos...</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (showError) {
+                return (
+                    <div>
+                        <div className="header">
+                            <h1 className="title">Photos</h1>
+                        </div>
+                        <div className="container">
+                            <div className="error-container">
+                                <div className="error-text">Error: Failed to Fetch</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="header">
+                        <h1 className="title">Photos</h1>
+                    </div>
+                    <div className="container">
+                        <div className="photo-grid">
+                            {colorCardsData.map((colorData, index) => (
+                                <ColorCard 
+                                    key={colorData.id} 
+                                    colorData={colorData} 
+                                    index={index} 
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PhotoGallery />);
+    </script>
+</body>
+</html>
