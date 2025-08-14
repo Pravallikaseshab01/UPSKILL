@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Grid Component</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+        
+        @keyframes gradientAnimation {
+            0% {
+                background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+                background-size: 400% 400%;
+            }
+            25% {
+                background: linear-gradient(45deg, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff6b6b);
+                background-size: 400% 400%;
+            }
+            50% {
+                background: linear-gradient(45deg, #45b7d1, #96ceb4, #feca57, #ff6b6b, #4ecdc4);
+                background-size: 400% 400%;
+            }
+            75% {
+                background: linear-gradient(45deg, #96ceb4, #feca57, #ff6b6b, #4ecdc4, #45b7d1);
+                background-size: 400% 400%;
+            }
+            100% {
+                background: linear-gradient(45deg, #feca57, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+                background-size: 400% 400%;
+            }
+        }
+        
+        .gradient-border {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 400% 400%;
+            animation: gradientAnimation 6s ease infinite;
+            padding: 3px;
+            border-radius: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .gradient-border:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+            animation-duration: 2s;
+        }
+        
+        .card-content {
+            background-color: black;
+            border-radius: 9px;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-border:hover .card-content {
+            background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,20,20,0.95) 100%);
+        }
+        
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-border:hover .play-button {
+            background-color: rgba(255, 255, 255, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .card-image {
+            width: 96px;
+            height: 96px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-border:hover .card-image {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-border:hover .card-title {
+            color: #93c5fd;
+            text-shadow: 0 0 10px rgba(147, 197, 253, 0.5);
+        }
+        
+        .card-description {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .gradient-border:hover .card-description {
+            color: #d1d5db;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 1rem;
+            }
+        }
+        
+        .main-title {
+            color: #60a5fa;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from {
+                text-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+            }
+            to {
+                text-shadow: 0 0 30px rgba(96, 165, 250, 0.6), 0 0 40px rgba(96, 165, 250, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Reusable Card component
+        const Card = ({ image, title, description, hasPlayButton = false }) => {
+            return (
+                <div className="gradient-border">
+                    <div className="card-content">
+                        <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                            <img 
+                                src={image} 
+                                alt={title}
+                                className="card-image"
+                            />
+                            {hasPlayButton && (
+                                <div className="play-button">
+                                    <svg width="24" height="24" fill="black" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            )}
+                        </div>
+                        <h3 className="card-title">
+                            {title}
+                        </h3>
+                        <p className="card-description">
+                            {description}
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main CardGrid component
+        const CardGrid = () => {
+            // Array of card data
+            const cardData = [
+                {
+                    id: 1,
+                    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop",
+                    title: "Card 1",
+                    description: "This is card 1 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 2,
+                    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=200&fit=crop",
+                    title: "Card 2", 
+                    description: "This is card 2 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 3,
+                    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=200&h=200&fit=crop",
+                    title: "Card 3",
+                    description: "This is card 3 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 4,
+                    image: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=200&h=200&fit=crop",
+                    title: "Card 4",
+                    description: "This is card 4 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 5,
+                    image: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=200&h=200&fit=crop",
+                    title: "Card 5",
+                    description: "This is card 5 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 6,
+                    image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200&h=200&fit=crop",
+                    title: "Card 6",
+                    description: "This is card 6 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 7,
+                    image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=200&h=200&fit=crop",
+                    title: "Card 7",
+                    description: "This is card 7 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 8,
+                    image: "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=200&h=200&fit=crop",
+                    title: "Card 8",
+                    description: "This is card 8 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 9,
+                    image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=200&h=200&fit=crop",
+                    title: "Card 9",
+                    description: "This is card 9 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 10,
+                    image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=200&h=200&fit=crop",
+                    title: "Card 10",
+                    description: "This is card 10 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 11,
+                    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop",
+                    title: "Card 11",
+                    description: "This is card 11 description",
+                    hasPlayButton: false
+                },
+                {
+                    id: 12,
+                    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=200&h=200&fit=crop",
+                    title: "Card 12",
+                    description: "This is card 12 description",
+                    hasPlayButton: false
+                }
+            ];
+
+            return (
+                <div style={{ minHeight: '100vh', backgroundColor: 'black', padding: '2rem' }}>
+                    <h1 className="main-title">
+                        All the cards are here.
+                    </h1>
+                    
+                    <div className="grid-container">
+                        {cardData.map((card) => (
+                            <Card
+                                key={card.id}
+                                image={card.image}
+                                title={card.title}
+                                description={card.description}
+                                hasPlayButton={card.hasPlayButton}
+                            />
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<CardGrid />);
+    </script>
+</body>
+</html>
